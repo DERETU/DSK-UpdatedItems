@@ -1,0 +1,7 @@
+prefix: "&7[&aUI&7]&r"
+
+maincolor: "&7"
+
+highlightcolor: "&a"
+
+help: "&7UpdatedItems Help//&7//&7Command: &a/updatedItems [/ui]//&7 - &areload&7: Reload the script. Done automatically after using /sk reload//&7 - &asave <id>&7: Saves your tool as a new item//&7 - &aremove <id>&7: Removes an item//&7 - &agive <id>&7: Gives you an item//&7 - &aupdate <id>&7: Updates an item. It will now be refreshed for players//&7 - &asavedTags <id> <action>: Configure saved nbt tags for items//&7 - &asavedLore <id> <action>: Configure saved lore for items//&7 - &asavedName <id>: Toggle saved name for items//&7 - &asavedDurability <id>: Toggle saved durability for items//&7 - &asavedUnbreakable <id>: Toggle saved unbreakable for items"

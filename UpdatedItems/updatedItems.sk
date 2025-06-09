@@ -1,0 +1,346 @@
+
+
+options:
+    autoUpdateConfig: true
+    # This determines if you will get the newest released item or the newest item in general when using the /ui give command
+    # Default: false
+    giveReleasedOnDefault: false
+
+    # If players should be notified when their items get updated
+    # Default: true
+    notifyPlayersOnUpdate: true
+
+    # The prefix for messages sent to players
+    # Default: &7[&aUI&7]&r
+    prefix: &7[&aUI&7]&r
+
+    # The main color for messages sent to players
+    # Default: &7
+    maincolor: &7
+
+    # The highlight color for messages sent to players
+    # Default: &a
+    highlightcolor: &a
+
+on unload:
+    save yaml "updatedItems"
+
+on load:
+    {@autoUpdateConfig} is true
+    DSK_UpdatedItems_refreshConfig()
+
+function DSK_UpdatedItems_refreshConfig():
+    # Make sure the config file exists
+    delete file "plugins/DeretuSkript/updatedItems.yml"
+    create file "plugins/DeretuSkript/updatedItems.yml"
+
+    # Get values from github
+    set file contents of "plugins/DeretuSkript/updatedItems.yml" to contents from url "github link"
+
+    ## Create temporary file for working with yaml
+    #create file "plugins/DeretuSkript/updatedItems_temp.yml"
+    ## Request content from url and paste to yaml
+    #set file contents of "plugins/DeretuSkript/updatedItems_temp.yml" to contents from url "https://pastebin.com/raw/FJtbY8Et"
+    ## Load yaml files
+    #load yaml "plugins/DeretuSkript/updatedItems.yml" as "updatedItems"
+    #load yaml "plugins/DeretuSkript/updatedItems_temp.yml" as "updatedItems_temp"
+    ## Go through all nodes in the temporary file and copy the values over to the config if they are part of the updatedItems section
+    #loop all skript-yaml nodes from "updatedItems_temp":
+    #    loop-value contains "scripts.updatedItems.":
+    #        set {_value} to (skript-yaml value loop-value from "updatedItems_temp")
+    #        set {_node} to loop-value
+    #        replace every "scripts.updatedItems." in {_node} with ""
+    #        set skript-yaml value {_node} from "updatedItems" to {_value}
+    ## Cleanup and saving the yaml
+    #unload yaml "plugins/DeretuSkript/updatedItems_temp.yml"
+    #delete file "plugins/DeretuSkript/updatedItems_temp.yml"
+
+    save yaml "updatedItems"
+    # Setting variables for easier use
+    set {-p} to yaml value "prefix" from "updatedItems"
+    set {-c} to yaml value "maincolor" from "updatedItems"
+    set {-h} to yaml value "highlightcolor" from "updatedItems"
+
+function DSK_UpdatedItems_refreshItems(p: player):
+    set {_counter} to 0
+    loop 40 times:
+        set {_prevItem} to slot (loop-number - 1) of {_p}
+        set {_itemID} to string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of {_prevItem}
+        {_itemID} is set
+        {dsk::updatedItems::released::%{_itemID}%} is set
+        set {_amount} to item amount of {_prevItem}
+        set {_newItem} to {dsk::updatedItems::released::%{_itemID}%}
+
+        # Saved Tags
+        size of {dsk::updatedItems::savedTags::%{_itemID}%::*} is more than 0:
+            set {_n} to nbt compound of {_prevItem}
+            loop {dsk::updatedItems::savedTags::%{_itemID}%::*}:
+                set {_tagType} to tag type of tag "minecraft:custom_data;%loop-value-2%" of {_n}
+                set {_tagValue} to {_tagType} "minecraft:custom_data;%loop-value-2%" of {_n}
+                set {_tagType} "minecraft:custom_data;%loop-value-2%" of nbt compound of {_newItem} to {_tagValue}
+                delete {_tagType}
+                delete {_tagValue}
+            delete {_n}
+
+        # Saved Lore
+        size of {dsk::updatedItems::savedLore::%{_itemID}%::*} is more than 0:
+            loop {dsk::updatedItems::savedLore::%{_itemID}%::*}:
+                set line (loop-value-2) of lore of {_newItem} to line (loop-value-2) of lore of {_prevItem}
+                
+        # Saved Name
+        if {dsk::updatedItems::savedName::%{_itemID}%} is true:
+            set name of {_newItem} to name of {_prevItem}
+        
+        # Saved Unbreakable
+        if {dsk::updatedItems::savedUnbreakable::%{_itemID}%} is true:
+            set {_newItem} to breakable {_newItem}
+            {_prevItem} is unbreakable:
+                set {_newItem} to unbreakable {_newItem}
+
+        # Saved Durability
+        if {dsk::updatedItems::savedDurability::%{_itemID}%} is true:
+            set durability of {_newItem} to durability of {_prevItem}
+
+        # Replacing the item
+        set (slot (loop-number - 1) of {_p}) to {_amount} of {_newItem}
+
+        # Raise counter by one if the item changed
+        (slot (loop-number - 1) of {_p}) is not {_prevItem}
+        add 1 to {_counter}
+
+    {@notifyPlayersOnUpdate} is true
+    {_counter} is more than 0
+    send "{@prefix}{@highlightcolor} %{_counter}% {@maincolor}of your items have been refreshed!" to {_p}
+    # no message when only lore changed
+
+
+function DSK_UpdatedItems_combineStrings(s: strings) :: string:
+    set {_s} to ""
+    loop {_s::*}:
+        stop if loop-value is not set
+        set {_s} to "%{_s}%%loop-value% "
+    return first (length of {_s} - 1) characters of {_s}
+
+command test:
+    trigger:
+        DSK_UpdatedItems_refreshItems(player)
+
+command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set item name
+    aliases: /ui
+    permission: dsk.updatedItems.command
+    trigger:
+        arg-1 is "reload":
+            player has permission "dsk.updatedItems.reload":
+                set {_} to now
+                DSK_UpdatedItems_refreshConfig()
+                send "%{-p}%%{-c}% Reload completed in %{-h}%%time since {_}%%{-c}%!"
+                stop
+        arg-1 is "remove":
+            player has permission "dsk.updatedItems.remove":
+                {dsk::updatedItems::items::%arg-2%} is not set:
+                    send "%{-p}%%{-c}% This item does not exist!"
+                    stop
+                send "%{-p}%%{-c}% Deleted item %{-h}%%arg-2%%{-c}%!"
+                remove arg-2 from {dsk::updatedItems::unreleased::*}
+                delete {dsk::updatedItems::released::%arg-2%}
+                delete {dsk::updatedItems::items::%arg-2%}
+                delete {dsk::updatedItems::savedTags::%arg-2%::*}
+                delete {dsk::updatedItems::savedLore::%arg-2%::*}
+                delete {dsk::updatedItems::savedName::%arg-2%}
+                delete {dsk::updatedItems::savedDurability::%arg-2%}
+                delete {dsk::updatedItems::savedUnbreakable::%arg-2%}
+                stop
+        arg-1 is "give":
+            player has permission "dsk.updatedItems.give":
+                set {_item} to {dsk::updatedItems::items::%arg-2%}
+                set {_3} to {@giveReleasedOnDefault}
+                arg-3 is "true":
+                    set {_3} to true
+                    set {_item} to {dsk::updatedItems::released::%arg-2%}
+                {_item} is not set:
+                    send "%{-p}%%{-c}% This item does not exist or it hasn't been released yet!"
+                    stop
+                send "%{-p}%%{-c}% You have been given one of item %{-h}%%arg-2%%{-c}%!"
+                give player 1 of {_item}
+                stop
+        arg-1 is "save":
+            player has permission "dsk.updatedItems.save":
+                player's tool is air:
+                    send "%{-p}%%{-c}% You cannot save air!"
+                    stop
+                arg-2 is not set:
+                    send "%{-p}%%{-c}% You have to set a name for the item!"
+                    stop
+                arg-3 is set:
+                    send "%{-p}%%{-c}% Item name cannot contain spaces!"
+                    stop
+                set {dsk::updatedItems::items::%arg-2%} to 1 of player's tool
+                add arg-2 to {dsk::updatedItems::unreleased::*} if {dsk::updatedItems::unreleased::*} does not contain arg-2
+                set string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of {dsk::updatedItems::items::%arg-2%} to arg-2
+                set string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of player's tool to arg-2
+                set {dsk::updatedItems::savedName::%arg-2%} to false if {dsk::updatedItems::savedName::%arg-2%} is not set
+                set {dsk::updatedItems::savedDurability::%arg-2%} to true if {dsk::updatedItems::savedDurability::%arg-2%} is not set
+                set {dsk::updatedItems::savedUnbreakable::%arg-2%} to false if {dsk::updatedItems::savedUnbreakable::%arg-2%} is not set
+                send "%{-p}%%{-c}% Saved your item as %{-h}%%arg-2%%{-c}%!"
+                stop
+        arg-1 is "update":
+            player has permission "dsk.updatedItems.update":
+                {dsk::updatedItems::unreleased::*} does not contain arg-2:
+                    send "%{-p}%%{-c}% This item either doesn't exist or it was already released!"
+                    stop
+                set {dsk::updatedItems::released::%arg-2%} to {dsk::updatedItems::items::%arg-2%}
+                remove arg-2 from {dsk::updatedItems::unreleased::*} 
+                send "%{-p}%%{-c}% This item will now be updated for players!"
+                stop
+        arg-1 is "savedTags":
+            player has permission "dsk.updatedItems.save":
+                {dsk::updatedItems::items::%arg-2%} is not set:
+                    send "%{-p}%%{-c}% This item doesn't exist!"
+                    stop
+                arg-3 is "add":
+                    arg-4 is not set:
+                        send "%{-p}%%{-c}% Saved nbt tag cannot be empty!"
+                        stop
+                    add arg-4 to {dsk::updatedItems::savedTags::%arg-2%::*}
+                    send "%{-p}%%{-c}% Tag %{-h}%%arg-4% %{-c}%will now be saved when updating the item %{-h}%%arg-2%%{-c}%!"
+                    stop
+                arg-3 is "remove":
+                    {dsk::updatedItems::savedTags::%arg-2%::*} does not contain arg-4:
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not saving the tag %{-h}%%arg-4%%{-c}%!"
+                        stop
+                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not longer saving the tag %{-h}%%arg-4%%{-c}%!"
+                    remove arg-4 from {dsk::updatedItems::savedTags::%arg-2%::*}
+                    stop
+                arg-3 is "clear":
+                    size of {dsk::updatedItems::savedTags::%arg-2%::*} is 0:
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved tags!"
+                        stop
+                    send "%{-p}%%{-c}% Cleared all saved tags for item %{-h}%%arg-2%%{-c}%! (%{-h}%%size of {dsk::updatedItems::savedTags::%arg-2%::*}%%{-c}%)"
+                    clear {dsk::updatedItems::savedTags::%arg-2%::*}
+                    stop
+                arg-3 is "list":
+                    size of {dsk::updatedItems::savedTags::%arg-2%::*} is 0:
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved tags!"
+                        stop
+                    send "%{-p}%%{-c}% Saved tags for item %{-h}%%arg-2% %{-c}%(%{-h}%%size of {dsk::updatedItems::savedTags::%arg-2%::*}%%{-c}%):"
+                    loop {dsk::updatedItems::savedTags::%arg-2%::*}:
+                        send "%{-c}% - %{-h}%%loop-value%"
+                    stop
+                send "%{-p}%%{-c}% Invalid argument!"
+                stop
+        arg-1 is "savedLore":
+            player has permission "dsk.updatedItems.save":
+                {dsk::updatedItems::items::%arg-2%} is not set:
+                    send "%{-p}%%{-c}% This item doesn't exist!"
+                    stop
+                arg-3 is "add":
+                    (arg-4 parsed as integer) is not set:
+                        send "%{-p}%%{-c}% Invalid line!"
+                        stop
+                    add (arg-4 parsed as integer) to {dsk::updatedItems::savedLore::%arg-2%::*}
+                    send "%{-p}%%{-c}% Line %{-h}%%arg-4% %{-c}%of the lore will not be saved when updating the item %{-h}%%arg-2%%{-c}%!"
+                    stop
+                arg-3 is "remove":
+                    {dsk::updatedItems::savedLore::%arg-2%::*} does not contain (arg-4 parsed as integer):
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not saving line %{-h}%%arg-4% %{-c}%of its lore!"
+                        stop
+                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not longer saving line %{-h}%%arg-4% %{-c}%of its lore!"
+                    remove (arg-4 parsed as integer) from {dsk::updatedItems::savedLore::%arg-2%::*}
+                    stop
+                arg-3 is "clear":
+                    size of {dsk::updatedItems::savedLore::%arg-2%::*} is 0:
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved lore!"
+                        stop
+                    send "%{-p}%%{-c}% Cleared all saved lore for item %{-h}%%arg-2%%{-c}%! (%{-h}%%size of {dsk::updatedItems::savedLore::%arg-2%::*}%%{-c}%)"
+                    clear {dsk::updatedItems::savedLore::%arg-2%::*}
+                    stop
+                arg-3 is "list":
+                    size of {dsk::updatedItems::savedLore::%arg-2%::*} is 0:
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved lore!"
+                        stop
+                    send "%{-p}%%{-c}% Saved lore for item %{-h}%%arg-2% %{-c}%(%{-h}%%size of {dsk::updatedItems::savedLore::%arg-2%::*}%%{-c}%):"
+                    loop {dsk::updatedItems::savedLore::%arg-2%::*}:
+                        send "%{-c}% - %{-h}%%loop-value%"
+                    stop
+                send "%{-p}%%{-c}% Invalid argument!"
+                stop
+        arg-1 is "savedName", "savedDurability" or "savedUnbreakable":
+            player has permission "dsk.updatedItems.save":
+                {dsk::updatedItems::items::%arg-2%} is not set:
+                    send "%{-p}%%{-c}% This item doesn't exist!"
+                    stop
+                set {_} to arg-1
+                replace all "saved" in {_} with ""
+                (arg-3 parsed as boolean) is not set:
+                    {dsk::updatedItems::saved%{_}%::%arg-2%} is true:
+                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%saves its %{-h}%%{_}%%{-c}%!"
+                        stop
+                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%does not save its %{-h}%%{_}%%{-c}%!"
+                    stop
+                (arg-3 parsed as boolean) is true:
+                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%now saves its %{-h}%%{_}%%{-c}%!"
+                    set {dsk::updatedItems::saved%{_}%::%arg-2%} to true
+                    stop
+                send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%now no longer saves its %{-h}%%{_}%%{-c}%!"
+                set {dsk::updatedItems::saved%{_}%::%arg-2%} to false
+                stop
+        set {_help} to yaml value "help" from "updatedItems"
+        replace every "//" in {_help} with newline
+        send colored formatted {_help}
+
+on tab complete of "/updatedItems" or "/ui":
+    add "reload" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.reload"
+
+    add "save" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.save"
+    add "give" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.give"
+    add "remove" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.remove"
+    
+    tab arg-1 is "save", "give" or "remove":
+        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set tab completions for position 3 to "true" and "false" if tab arg-1 is "give"
+
+    add "update" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.update"
+    tab arg-1 is "update":
+        set tab completions for position 2 to {dsk::updatedItems::unreleased::*}
+
+    add "savedTags" and "savedLore" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.save"
+    tab arg-1 is "savedTags":
+        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set tab completions for position 3 to "add", "remove", "clear" and "list"
+        tab arg-3 is "remove":
+            set tab completions for position 4 to {dsk::updatedItems::savedTags::%tab arg-2%::*}
+    tab arg-1 is "savedLore":
+        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set tab completions for position 3 to "add", "remove", "clear" and "list"
+        tab arg-3 is "add":
+            loop (size of lore of {dsk::updatedItems::items::%tab arg-2%}) times:
+                {dsk::updatedItems::savedLore::%tab arg-2%::*} does not contain loop-iteration
+                add loop-iteration to tab completions for position 4
+        tab arg-3 is "remove":
+            set tab completions for position 4 to {dsk::updatedItems::savedLore::%tab arg-2%::*}
+    add "savedName", "savedUnbreakable" and "savedDurability" to tab completions for position 1 if player has permission "dsk.updatedItems.save"
+    tab arg-1 is "savedName", "savedUnbreakable" or "savedDurability":
+        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set tab completions for position 3 to "true" and "false"
+
+    
+    
+
+# inventory close, join, pickup
+on join:
+    DSK_UpdatedItems_refreshItems(player)
+
+on inventory close:
+    DSK_UpdatedItems_refreshItems(player)
+
+on pickup:
+    set {_itemID} to string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of event-item
+    {_itemID} is set
+    wait 1 tick
+    DSK_UpdatedItems_refreshItems(player)
+
+on death:
+    attacker is player
+    string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of attacker's tool is "kill_count_sword"
+    set int tag "minecraft:custom_data;kills" of nbt of attacker's tool to (int tag "minecraft:custom_data;kills" of nbt of attacker's tool + 1)
+    set line 1 of lore of attacker's tool to "%int tag "minecraft:custom_data;kills" of nbt of attacker's tool%"
