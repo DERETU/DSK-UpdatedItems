@@ -4,4 +4,4 @@ maincolor: "&7"
 
 highlightcolor: "&a"
 
-help: "&a/ui save&7: Save an item//&a/ui savedTags/savedLore/savedDurability/savedUnbreakable/savedName&7: Change the preserved values for an item//&a/ui give&7: Give an item//&a/ui remove&7: Remove an item//&a/ui update&7: Release/Update an item//&a/ui info&7: Get information on the script//&a/ui reload&7: Reload the scripts configuration//&a/ui list&7: List all items//&7//&7Visit &ahttps://github.com/DERETU/DeretuSkript &7for more"
+help: "&a/ui save&7: Save an item//&a/ui saved...&7: Change the preserved values for an item//&a/ui give&7: Give an item//&a/ui remove&7: Remove an item//&a/ui update&7: Release/Update an item//&a/ui info&7: Get information on the script//&a/ui reload&7: Reload the scripts configuration//&a/ui list&7: List all items//&7//&aVisit my github in /ui info for a better explanation"

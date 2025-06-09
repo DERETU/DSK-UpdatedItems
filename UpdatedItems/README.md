@@ -43,8 +43,6 @@ Personally, I always found it very annoying to not have this script, so I hope I
 /ui list (dsk.updatedItems.list): List all items
 
 
-# More Detailed explanation below
-
 # Creating a new item
 
 To create a new item, simply run "/ui save <id>" while holding the item in hand. The id will later be used to change the item.
