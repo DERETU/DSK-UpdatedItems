@@ -1,10 +1,16 @@
-
+# UpdatedItems by Deretu
+# version 1.0
 
 options:
     autoUpdateConfig: true
+
     # This determines if you will get the newest released item or the newest item in general when using the /ui give command
     # Default: false
     giveReleasedOnDefault: false
+
+    # Set this to the amount of items that should be shown on one page in the /ui list command
+    # Default: 10
+    itemsPerPage: 10
 
     # If players should be notified when their items get updated
     # Default: true
@@ -33,28 +39,9 @@ function DSK_UpdatedItems_refreshConfig():
     # Make sure the config file exists
     delete file "plugins/DeretuSkript/updatedItems.yml"
     create file "plugins/DeretuSkript/updatedItems.yml"
-
     # Get values from github
-    set file contents of "plugins/DeretuSkript/updatedItems.yml" to contents from url "github link"
-
-    ## Create temporary file for working with yaml
-    #create file "plugins/DeretuSkript/updatedItems_temp.yml"
-    ## Request content from url and paste to yaml
-    #set file contents of "plugins/DeretuSkript/updatedItems_temp.yml" to contents from url "https://pastebin.com/raw/FJtbY8Et"
-    ## Load yaml files
-    #load yaml "plugins/DeretuSkript/updatedItems.yml" as "updatedItems"
-    #load yaml "plugins/DeretuSkript/updatedItems_temp.yml" as "updatedItems_temp"
-    ## Go through all nodes in the temporary file and copy the values over to the config if they are part of the updatedItems section
-    #loop all skript-yaml nodes from "updatedItems_temp":
-    #    loop-value contains "scripts.updatedItems.":
-    #        set {_value} to (skript-yaml value loop-value from "updatedItems_temp")
-    #        set {_node} to loop-value
-    #        replace every "scripts.updatedItems." in {_node} with ""
-    #        set skript-yaml value {_node} from "updatedItems" to {_value}
-    ## Cleanup and saving the yaml
-    #unload yaml "plugins/DeretuSkript/updatedItems_temp.yml"
-    #delete file "plugins/DeretuSkript/updatedItems_temp.yml"
-
+    set file contents of "plugins/DeretuSkript/updatedItems.yml" to contents from url "https://raw.githubusercontent.com/DERETU/DeretuSkript/refs/heads/main/UpdatedItems/config.yml"
+    load yaml "plugins/DeretuSkript/updatedItems.yml" as "updatedItems"
     save yaml "updatedItems"
     # Setting variables for easier use
     set {-p} to yaml value "prefix" from "updatedItems"
@@ -62,6 +49,7 @@ function DSK_UpdatedItems_refreshConfig():
     set {-h} to yaml value "highlightcolor" from "updatedItems"
 
 function DSK_UpdatedItems_refreshItems(p: player):
+    {_p} does not have permission "dsk.updatedItems.blacklistUpdating"
     set {_counter} to 0
     loop 40 times:
         set {_prevItem} to slot (loop-number - 1) of {_p}
@@ -113,18 +101,6 @@ function DSK_UpdatedItems_refreshItems(p: player):
     send "{@prefix}{@highlightcolor} %{_counter}% {@maincolor}of your items have been refreshed!" to {_p}
     # no message when only lore changed
 
-
-function DSK_UpdatedItems_combineStrings(s: strings) :: string:
-    set {_s} to ""
-    loop {_s::*}:
-        stop if loop-value is not set
-        set {_s} to "%{_s}%%loop-value% "
-    return first (length of {_s} - 1) characters of {_s}
-
-command test:
-    trigger:
-        DSK_UpdatedItems_refreshItems(player)
-
 command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set item name
     aliases: /ui
     permission: dsk.updatedItems.command
@@ -134,6 +110,47 @@ command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set i
                 set {_} to now
                 DSK_UpdatedItems_refreshConfig()
                 send "%{-p}%%{-c}% Reload completed in %{-h}%%time since {_}%%{-c}%!"
+                stop
+        arg-1 is "info":
+            send "&7"
+            send "%{-h}%UpdatedItems %{-c}%by %{-h}%Deretu"
+            send "&7"
+            send "%{-c}%Version %{-h}%1.0"
+            send "%{-c}%Use %{-h}%/updatedItems help %{-c}%for a list of commands"
+            send "&7"
+            send "%{-h}%<url:https://github.com/DERETU/DeretuSkript>https://github.com/DERETU/DeretuSkript"
+            send "&7"
+            stop
+        arg-1 is "list":
+            player has permission "dsk.updatedItems.list":
+                arg-2 is not "all", "released" or "unreleased":
+                    send "%{-p}%%{-c}% This list does not exist!"
+                    stop
+                set {_3} to arg-3 parsed as integer
+                set {_3} to 1 if {_3} is not more than 0
+                set {_firstElement} to ({_3} - 1) * {@itemsPerPage} + 1
+                set {_lastElement} to {_firstElement} + {@itemsPerPage} - 1
+                send "%{-p}%%{-c}% List of %{-h}%%arg-2% %{-c}%items (%{-h}%Page %{_3}%%{-c}%):"
+                send "&7"
+                if arg-2 is "released":
+                    loop {dsk::updatedItems::released::*}:
+                        loop-iteration is between {_firstElement} and {_lastElement}
+                        send formatted "%{-c}% - %{-h}%%loop-index% %{-c}%&o<cmd:/updateditems give %loop-index% true>[GIVE]"
+                        stop if loop-iteration is {_lastElement}
+                else if arg-2 is "unreleased":
+                    loop {dsk::updatedItems::unreleased::*}:
+                        loop-iteration is between {_firstElement} and {_lastElement}
+                        send formatted "%{-c}% - %{-h}%%loop-value% %{-c}%&o<cmd:/updateditems give %loop-value% false>[GIVE]"
+                        stop if loop-iteration is {_lastElement}
+                else:
+                    loop {dsk::updatedItems::items::*}:
+                        loop-iteration is between {_firstElement} and {_lastElement}
+                        set {_c} to "&a"
+                        set {_c} to "&c" if {dsk::updatedItems::unreleased::*} contains loop-index
+                        send formatted "%{-c}% - %{_c}%%loop-index% %{-c}%&o<cmd:/updateditems give %loop-index%>[GIVE]"
+                        stop if loop-iteration is {_lastElement}
+                send "&7"
+                send formatted "%{-h}%<cmd:/updateditems list %arg-2% %{_3} - 1%>Previous Page<reset> %{-c}%- %{-h}%<cmd:/updateditems list %arg-2% %{_3} + 1%>Next Page<reset>"
                 stop
         arg-1 is "remove":
             player has permission "dsk.updatedItems.remove":
@@ -289,44 +306,45 @@ command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set i
         send colored formatted {_help}
 
 on tab complete of "/updatedItems" or "/ui":
-    add "reload" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.reload"
+    add "info" to skbee tab completions for position 1
+    add "reload" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.reload"
 
-    add "save" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.save"
-    add "give" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.give"
-    add "remove" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.remove"
+    add "save" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.save"
+    add "give" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.give"
+    add "remove" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.remove"
     
     tab arg-1 is "save", "give" or "remove":
-        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
-        set tab completions for position 3 to "true" and "false" if tab arg-1 is "give"
+        set skbee tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set skbee tab completions for position 3 to "true" and "false" if tab arg-1 is "give"
 
-    add "update" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.update"
+    add "update" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.update"
     tab arg-1 is "update":
-        set tab completions for position 2 to {dsk::updatedItems::unreleased::*}
+        set skbee tab completions for position 2 to {dsk::updatedItems::unreleased::*}
 
-    add "savedTags" and "savedLore" to skbee tab completion for position 1 if player has permission "dsk.updatedItems.save"
+    add "savedTags" and "savedLore" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.save"
     tab arg-1 is "savedTags":
-        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
-        set tab completions for position 3 to "add", "remove", "clear" and "list"
+        set skbee tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set skbee tab completions for position 3 to "add", "remove", "clear" and "list"
         tab arg-3 is "remove":
-            set tab completions for position 4 to {dsk::updatedItems::savedTags::%tab arg-2%::*}
+            set skbee tab completions for position 4 to {dsk::updatedItems::savedTags::%tab arg-2%::*}
     tab arg-1 is "savedLore":
-        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
-        set tab completions for position 3 to "add", "remove", "clear" and "list"
+        set skbee tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set skbee tab completions for position 3 to "add", "remove", "clear" and "list"
         tab arg-3 is "add":
             loop (size of lore of {dsk::updatedItems::items::%tab arg-2%}) times:
                 {dsk::updatedItems::savedLore::%tab arg-2%::*} does not contain loop-iteration
-                add loop-iteration to tab completions for position 4
+                add loop-iteration to skbee tab completions for position 4
         tab arg-3 is "remove":
-            set tab completions for position 4 to {dsk::updatedItems::savedLore::%tab arg-2%::*}
-    add "savedName", "savedUnbreakable" and "savedDurability" to tab completions for position 1 if player has permission "dsk.updatedItems.save"
+            set skbee tab completions for position 4 to {dsk::updatedItems::savedLore::%tab arg-2%::*}
+    add "savedName", "savedUnbreakable" and "savedDurability" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.save"
     tab arg-1 is "savedName", "savedUnbreakable" or "savedDurability":
-        set tab completions for position 2 to indices of {dsk::updatedItems::items::*}
-        set tab completions for position 3 to "true" and "false"
-
+        set skbee tab completions for position 2 to indices of {dsk::updatedItems::items::*}
+        set skbee tab completions for position 3 to "true" and "false"
+    add "list" to skbee tab completions for position 1 if player has permission "dsk.updatedItems.list"
+    tab arg-1 is "list":
+        set skbee tab completions for position 2 to "all", "released" and "unreleased"
     
-    
 
-# inventory close, join, pickup
 on join:
     DSK_UpdatedItems_refreshItems(player)
 
@@ -339,8 +357,9 @@ on pickup:
     wait 1 tick
     DSK_UpdatedItems_refreshItems(player)
 
-on death:
-    attacker is player
-    string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of attacker's tool is "kill_count_sword"
-    set int tag "minecraft:custom_data;kills" of nbt of attacker's tool to (int tag "minecraft:custom_data;kills" of nbt of attacker's tool + 1)
-    set line 1 of lore of attacker's tool to "%int tag "minecraft:custom_data;kills" of nbt of attacker's tool%"
+# Example kill count sword
+#on death:
+#    attacker is player
+#    string tag "minecraft:custom_data;dsk;updatedItems;item" of nbt of attacker's tool is "kill_count_sword"
+#    set int tag "minecraft:custom_data;kills" of nbt of attacker's tool to (int tag "minecraft:custom_data;kills" of nbt of attacker's tool + 1)
+#    set line 1 of lore of attacker's tool to "%int tag "minecraft:custom_data;kills" of nbt of attacker's tool%"
