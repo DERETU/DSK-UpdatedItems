@@ -126,9 +126,6 @@ You can create as many groups as you want and every item can have as many groups
 Sometimes you don't want to get items updated for certain people (e.g. it's annoying to get your items updated while trying to make changes). To prevent this, simply set the "dsk.updatedItems.blacklistUpdating" permission to true.
 
 
-# 
-
-
 # Information for developers
 
 This script is completely open source and free to use. You can do with it whatever you want, as long as you don't claim it as your own and/or resell/redistribute it without my permission.

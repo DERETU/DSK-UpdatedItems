@@ -45,7 +45,7 @@ function DSK_UpdatedItems_refreshConfig():
     delete file "plugins/DeretuSkript/updatedItems.yml"
     create file "plugins/DeretuSkript/updatedItems.yml"
     # Get values from github
-    set file contents of "plugins/DeretuSkript/updatedItems.yml" to contents from url "https://raw.githubusercontent.com/DERETU/DeretuSkript/refs/heads/main/UpdatedItems/config.yml"
+    set file contents of "plugins/DeretuSkript/updatedItems.yml" to contents from url "https://raw.githubusercontent.com/DERETU/DSK-UpdatedItems/refs/heads/main/config.yml"
     load yaml "plugins/DeretuSkript/updatedItems.yml" as "updatedItems"
     save yaml "updatedItems"
     # Setting variables for easier use
@@ -152,7 +152,7 @@ command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set i
             send "&7"
             send "%{-dsk::updatedItems::highlightcolor}%UpdatedItems %{-dsk::updatedItems::maincolor}%by %{-dsk::updatedItems::highlightcolor}%Deretu"
             send "&7"
-            send "%{-dsk::updatedItems::maincolor}%Version %{-dsk::updatedItems::highlightcolor}%1.0"
+            send "%{-dsk::updatedItems::maincolor}%Version %{-dsk::updatedItems::highlightcolor}%1.1"
             send "%{-dsk::updatedItems::maincolor}%Use %{-dsk::updatedItems::highlightcolor}%/updatedItems help %{-dsk::updatedItems::maincolor}%for a list of commands"
             send "&7"
             send "%{-dsk::updatedItems::highlightcolor}%<url:https://github.com/DERETU/DeretuSkript>https://github.com/DERETU/DeretuSkript"
