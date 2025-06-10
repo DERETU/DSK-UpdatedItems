@@ -14,13 +14,13 @@
 
 This script is a tool for server owners. It allows you to save and update certain items so that every player has the same version. This way, you can easily make changes to items, which then get automatically refreshed for all players.
 
-For example, your server has a sword named "Slayer" which you can buy in a shop. The sword is a netherrite sword enchanted with sharpness 7.
+For example, your server has a sword named "Slayer" which you can buy in a shop. The sword is a netherite sword enchanted with sharpness 7.
 After opening the shop you however realize that sharpness 7 is to strong, so you want to change it to sharpness 5. The problem: People already have the old sword with sharpness 7, and you would have to manually remove it from them or code something that does the job.
-This script makes the job way easier, as you would be able to simply run "/ui save <id>" with the new item in hand and then update it with "/ui update <id>"!
+This script makes the job way easier, as you would be able to simply run "/ui save <id>" with the new item in hand and then update it with "/ui release <id>"!
 More information on how this works and how to set it up is below.
 
 
-# Why use Update Items?
+# Why use Updated Items?
 
 This script is very easy to use, but still powerful and can save a lot of time and effort when used correctly.
 It comes with very natural commands and full tab completion support.
@@ -34,32 +34,47 @@ Personally, I always found it very annoying to not have this script, so I hope I
 
 /updatedItems [/ui] (dsk.updatedItems.command): Basic command
 /ui save (dsk.updatedItems.save): Save an item
-/ui savedTags/savedLore/savedDurability/savedUnbreakable/savedName (dsk.updatedItems.save): Change the preserved values for an item
+/ui savedTags/savedLore/savedDurability/savedUnbreakable/savedName/savedAttributes/savedCustomModelData/savedEnchantments (dsk.updatedItems.save): Change the preserved values for an item
 /ui give (dsk.updatedItems.give): Give an item
-/ui remove (dsk.updatedItems.remove): Remove an item
-/ui update (dsk.updatedItems.update): Release/Update an item
+/ui delete (dsk.updatedItems.remove): Delete an item
+/ui release (dsk.updatedItems.update): Release an item
+/ui unrelease (dsk.updatedItems.update): Unrelease an item
 /ui info: Get information on the script
 /ui reload (dsk.updatedItems.reload): Reload the scripts configuration
 /ui list (dsk.updatedItems.list): List all items
+/ui group (dsk.updatedItems.group): Commands for the group system
+ - /ui group create: Create a new group
+ - /ui group delete: Delete a group
+ - /ui group add: Add an item to a group
+ - /ui group remove: Remove an item from a group
+ - /ui group clear: Remove all items from a group
+ - /ui group deleteAll (dsk.updatedItems.remove): Delete all items in a group
+ - /ui group list: List items from a group
+ - /ui group listgroups: List all groups
+ - /ui group give: Give all items from a group
+ - /ui group rename: Rename a group
+ - /ui group release (dsk.updatedItems.update): Release all items in a group
+ - /ui group unrelease (dsk.updatedItems.update): Unrelease all items in a group
 
 
 # Creating a new item
 
 To create a new item, simply run "/ui save <id>" while holding the item in hand. The id will later be used to change the item.
-Additionally, you should do "/ui update <id>" to make sure that the item gets updated. This is technically not needed, as this item does not have a previous version.
+Additionally, you should do "/ui release <id>" to make sure that the item gets updated. This is technically not needed, as this item does not have a previous version.
 
 
 # Updating an item
 
 Updating an item is as simple as running "/ui save <id>" while holding the new item.
-However, in order for other players to get their items refreshed, you have to run the command "/ui update <id>", called "releasing". This will make it so whenever a player joins, closes their inventory or picks up an item, their inventory will be searched for items that are "out of date". These items will then be replaced with their new versions.
+However, in order for other players to get their items refreshed, you have to run the command "/ui release <id>", called "releasing". This will make it so whenever a player joins, closes their inventory or picks up an item, their inventory will be searched for items that are "out of date". These items will then be replaced with their new versions.
+You can also unrelease an item if you don't want items to be replaced anymore using "/ui unrelease <id>".
 For performance reasons, chests and shulker boxes will not be searched by the script. It only ensures that the items in a players inventory are up to date and that they can't use an item that isn't up to date. I might consider adding an option to enable searching containers in the future.
 
 
 # Removing an item
 
 To remove an item, simply do "/ui remove <id>". This will NOT delete the items in the inventory of players.
-This functionality will be added as an option in the future, though I probably would not recommend using it. This is because to make sure the old items don't appear again, you would have to permamently save all deleted items.
+This functionality might be added as an option in the future, though I probably would not recommend using it. This is because to make sure the old items don't appear again, you would have to permamently save all deleted items.
 
 
 # Giving an item
@@ -88,9 +103,19 @@ Listing unreleased items will display all items that could possible receive an u
 Listing released items will display all items that have been released at some point. This can also include unreleased items. Clicking the "give" button will give the released item (the one that players currently have).
 
 
+# Grouping items
+
+The ability to group items is very useful. It helps with better organization, releasing/unreleasing packs of items at once, deleting lots of items at once and more.
+To access the group system type /ui group. You can create and delete groups, add and remove items, clear groups, delete all items from a group, release/unrelease all items from a group, rename a group, list all groups, list all items in a group and get all items in a group.
+You can create as many groups as you want and every item can have as many groups added to it as you want.
+
+
 # Blacklist updating
 
 Sometimes you don't want to get items updated for certain people (e.g. it's annoying to get your items updated while trying to make changes). To prevent this, simply set the "dsk.updatedItems.blacklistUpdating" permission to true.
+
+
+# 
 
 
 # Information for developers
@@ -100,15 +125,15 @@ I would appreciate if you messaged me that you use this if you do, so I can see 
 
 If you need any help, you can reach out to me on discord (@deretu). I rarely read my email or github.
 
-The 2 functions in this script are
+The 3 functions in this script are
  - DSK_UpdatedItems_refreshConfig() for refreshing the config
  - DSK_UpdatedItems_refreshItems(player) for refreshing the items in a player's inventory
+ - DSK_UpdatedItems_removeItem(string) for removing an item, deleting all the variables it uses and removing it from every group
 
 
 # Content for future updates
 
 There are a couple things I have planned for the future. This includes
- - Grouping items
  - More preserved values
  - Better ingame tutorial
  - Listing items in a gui
