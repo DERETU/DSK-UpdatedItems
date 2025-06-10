@@ -37,6 +37,7 @@ on load:
 
 function DSK_UpdatedItems_refreshConfig():
     # Make sure the config file exists
+    unload yaml "updatedItems"
     delete file "plugins/DeretuSkript/updatedItems.yml"
     create file "plugins/DeretuSkript/updatedItems.yml"
     # Get values from github
@@ -44,9 +45,9 @@ function DSK_UpdatedItems_refreshConfig():
     load yaml "plugins/DeretuSkript/updatedItems.yml" as "updatedItems"
     save yaml "updatedItems"
     # Setting variables for easier use
-    set {-p} to yaml value "prefix" from "updatedItems"
-    set {-c} to yaml value "maincolor" from "updatedItems"
-    set {-h} to yaml value "highlightcolor" from "updatedItems"
+    set {-dsk::updatedItems::prefix} to yaml value "prefix" from "updatedItems"
+    set {-dsk::updatedItems::maincolor} to yaml value "maincolor" from "updatedItems"
+    set {-dsk::updatedItems::highlightcolor} to yaml value "highlightcolor" from "updatedItems"
 
 function DSK_UpdatedItems_refreshItems(p: player):
     {_p} does not have permission "dsk.updatedItems.blacklistUpdating"
@@ -109,55 +110,55 @@ command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set i
             player has permission "dsk.updatedItems.reload":
                 set {_} to now
                 DSK_UpdatedItems_refreshConfig()
-                send "%{-p}%%{-c}% Reload completed in %{-h}%%time since {_}%%{-c}%!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Reload completed in %{-dsk::updatedItems::highlightcolor}%%time since {_}%%{-dsk::updatedItems::maincolor}%!"
                 stop
         arg-1 is "info":
             send "&7"
-            send "%{-h}%UpdatedItems %{-c}%by %{-h}%Deretu"
+            send "%{-dsk::updatedItems::highlightcolor}%UpdatedItems %{-dsk::updatedItems::maincolor}%by %{-dsk::updatedItems::highlightcolor}%Deretu"
             send "&7"
-            send "%{-c}%Version %{-h}%1.0"
-            send "%{-c}%Use %{-h}%/updatedItems help %{-c}%for a list of commands"
+            send "%{-dsk::updatedItems::maincolor}%Version %{-dsk::updatedItems::highlightcolor}%1.0"
+            send "%{-dsk::updatedItems::maincolor}%Use %{-dsk::updatedItems::highlightcolor}%/updatedItems help %{-dsk::updatedItems::maincolor}%for a list of commands"
             send "&7"
-            send "%{-h}%<url:https://github.com/DERETU/DeretuSkript>https://github.com/DERETU/DeretuSkript"
+            send "%{-dsk::updatedItems::highlightcolor}%<url:https://github.com/DERETU/DeretuSkript>https://github.com/DERETU/DeretuSkript"
             send "&7"
             stop
         arg-1 is "list":
             player has permission "dsk.updatedItems.list":
                 arg-2 is not "all", "released" or "unreleased":
-                    send "%{-p}%%{-c}% This list does not exist!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This list does not exist!"
                     stop
                 set {_3} to arg-3 parsed as integer
                 set {_3} to 1 if {_3} is not more than 0
                 set {_firstElement} to ({_3} - 1) * {@itemsPerPage} + 1
                 set {_lastElement} to {_firstElement} + {@itemsPerPage} - 1
-                send "%{-p}%%{-c}% List of %{-h}%%arg-2% %{-c}%items (%{-h}%Page %{_3}%%{-c}%):"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% List of %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%items (%{-dsk::updatedItems::highlightcolor}%Page %{_3}%%{-dsk::updatedItems::maincolor}%):"
                 send "&7"
                 if arg-2 is "released":
                     loop {dsk::updatedItems::released::*}:
                         loop-iteration is between {_firstElement} and {_lastElement}
-                        send formatted "%{-c}% - %{-h}%%loop-index% %{-c}%&o<cmd:/updateditems give %loop-index% true>[GIVE]"
+                        send formatted "%{-dsk::updatedItems::maincolor}% - %{-dsk::updatedItems::highlightcolor}%%loop-index% %{-dsk::updatedItems::maincolor}%&o<cmd:/updateditems give %loop-index% true>[GIVE]"
                         stop if loop-iteration is {_lastElement}
                 else if arg-2 is "unreleased":
                     loop {dsk::updatedItems::unreleased::*}:
                         loop-iteration is between {_firstElement} and {_lastElement}
-                        send formatted "%{-c}% - %{-h}%%loop-value% %{-c}%&o<cmd:/updateditems give %loop-value% false>[GIVE]"
+                        send formatted "%{-dsk::updatedItems::maincolor}% - %{-dsk::updatedItems::highlightcolor}%%loop-value% %{-dsk::updatedItems::maincolor}%&o<cmd:/updateditems give %loop-value% false>[GIVE]"
                         stop if loop-iteration is {_lastElement}
                 else:
                     loop {dsk::updatedItems::items::*}:
                         loop-iteration is between {_firstElement} and {_lastElement}
                         set {_c} to "&a"
                         set {_c} to "&c" if {dsk::updatedItems::unreleased::*} contains loop-index
-                        send formatted "%{-c}% - %{_c}%%loop-index% %{-c}%&o<cmd:/updateditems give %loop-index%>[GIVE]"
+                        send formatted "%{-dsk::updatedItems::maincolor}% - %{_c}%%loop-index% %{-dsk::updatedItems::maincolor}%&o<cmd:/updateditems give %loop-index%>[GIVE]"
                         stop if loop-iteration is {_lastElement}
                 send "&7"
-                send formatted "%{-h}%<cmd:/updateditems list %arg-2% %{_3} - 1%>Previous Page<reset> %{-c}%- %{-h}%<cmd:/updateditems list %arg-2% %{_3} + 1%>Next Page<reset>"
+                send formatted "%{-dsk::updatedItems::highlightcolor}%<cmd:/updateditems list %arg-2% %{_3} - 1%>Previous Page<reset> %{-dsk::updatedItems::maincolor}%- %{-dsk::updatedItems::highlightcolor}%<cmd:/updateditems list %arg-2% %{_3} + 1%>Next Page<reset>"
                 stop
         arg-1 is "remove":
             player has permission "dsk.updatedItems.remove":
                 {dsk::updatedItems::items::%arg-2%} is not set:
-                    send "%{-p}%%{-c}% This item does not exist!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item does not exist!"
                     stop
-                send "%{-p}%%{-c}% Deleted item %{-h}%%arg-2%%{-c}%!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Deleted item %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%!"
                 remove arg-2 from {dsk::updatedItems::unreleased::*}
                 delete {dsk::updatedItems::released::%arg-2%}
                 delete {dsk::updatedItems::items::%arg-2%}
@@ -175,21 +176,21 @@ command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set i
                     set {_3} to true
                     set {_item} to {dsk::updatedItems::released::%arg-2%}
                 {_item} is not set:
-                    send "%{-p}%%{-c}% This item does not exist or it hasn't been released yet!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item does not exist or it hasn't been released yet!"
                     stop
-                send "%{-p}%%{-c}% You have been given one of item %{-h}%%arg-2%%{-c}%!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% You have been given one of item %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%!"
                 give player 1 of {_item}
                 stop
         arg-1 is "save":
             player has permission "dsk.updatedItems.save":
                 player's tool is air:
-                    send "%{-p}%%{-c}% You cannot save air!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% You cannot save air!"
                     stop
                 arg-2 is not set:
-                    send "%{-p}%%{-c}% You have to set a name for the item!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% You have to set a name for the item!"
                     stop
                 arg-3 is set:
-                    send "%{-p}%%{-c}% Item name cannot contain spaces!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Item name cannot contain spaces!"
                     stop
                 set {dsk::updatedItems::items::%arg-2%} to 1 of player's tool
                 add arg-2 to {dsk::updatedItems::unreleased::*} if {dsk::updatedItems::unreleased::*} does not contain arg-2
@@ -198,107 +199,107 @@ command /updatedItems [<string>] [<string>] [<string>] [<string>]: # group set i
                 set {dsk::updatedItems::savedName::%arg-2%} to false if {dsk::updatedItems::savedName::%arg-2%} is not set
                 set {dsk::updatedItems::savedDurability::%arg-2%} to true if {dsk::updatedItems::savedDurability::%arg-2%} is not set
                 set {dsk::updatedItems::savedUnbreakable::%arg-2%} to false if {dsk::updatedItems::savedUnbreakable::%arg-2%} is not set
-                send "%{-p}%%{-c}% Saved your item as %{-h}%%arg-2%%{-c}%!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Saved your item as %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%!"
                 stop
         arg-1 is "update":
             player has permission "dsk.updatedItems.update":
                 {dsk::updatedItems::unreleased::*} does not contain arg-2:
-                    send "%{-p}%%{-c}% This item either doesn't exist or it was already released!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item either doesn't exist or it was already released!"
                     stop
                 set {dsk::updatedItems::released::%arg-2%} to {dsk::updatedItems::items::%arg-2%}
                 remove arg-2 from {dsk::updatedItems::unreleased::*} 
-                send "%{-p}%%{-c}% This item will now be updated for players!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item will now be updated for players!"
                 stop
         arg-1 is "savedTags":
             player has permission "dsk.updatedItems.save":
                 {dsk::updatedItems::items::%arg-2%} is not set:
-                    send "%{-p}%%{-c}% This item doesn't exist!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item doesn't exist!"
                     stop
                 arg-3 is "add":
                     arg-4 is not set:
-                        send "%{-p}%%{-c}% Saved nbt tag cannot be empty!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Saved nbt tag cannot be empty!"
                         stop
                     add arg-4 to {dsk::updatedItems::savedTags::%arg-2%::*}
-                    send "%{-p}%%{-c}% Tag %{-h}%%arg-4% %{-c}%will now be saved when updating the item %{-h}%%arg-2%%{-c}%!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Tag %{-dsk::updatedItems::highlightcolor}%%arg-4% %{-dsk::updatedItems::maincolor}%will now be saved when updating the item %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%!"
                     stop
                 arg-3 is "remove":
                     {dsk::updatedItems::savedTags::%arg-2%::*} does not contain arg-4:
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not saving the tag %{-h}%%arg-4%%{-c}%!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%is not saving the tag %{-dsk::updatedItems::highlightcolor}%%arg-4%%{-dsk::updatedItems::maincolor}%!"
                         stop
-                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not longer saving the tag %{-h}%%arg-4%%{-c}%!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%is not longer saving the tag %{-dsk::updatedItems::highlightcolor}%%arg-4%%{-dsk::updatedItems::maincolor}%!"
                     remove arg-4 from {dsk::updatedItems::savedTags::%arg-2%::*}
                     stop
                 arg-3 is "clear":
                     size of {dsk::updatedItems::savedTags::%arg-2%::*} is 0:
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved tags!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%doesn't have any saved tags!"
                         stop
-                    send "%{-p}%%{-c}% Cleared all saved tags for item %{-h}%%arg-2%%{-c}%! (%{-h}%%size of {dsk::updatedItems::savedTags::%arg-2%::*}%%{-c}%)"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Cleared all saved tags for item %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%! (%{-dsk::updatedItems::highlightcolor}%%size of {dsk::updatedItems::savedTags::%arg-2%::*}%%{-dsk::updatedItems::maincolor}%)"
                     clear {dsk::updatedItems::savedTags::%arg-2%::*}
                     stop
                 arg-3 is "list":
                     size of {dsk::updatedItems::savedTags::%arg-2%::*} is 0:
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved tags!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%doesn't have any saved tags!"
                         stop
-                    send "%{-p}%%{-c}% Saved tags for item %{-h}%%arg-2% %{-c}%(%{-h}%%size of {dsk::updatedItems::savedTags::%arg-2%::*}%%{-c}%):"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Saved tags for item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%(%{-dsk::updatedItems::highlightcolor}%%size of {dsk::updatedItems::savedTags::%arg-2%::*}%%{-dsk::updatedItems::maincolor}%):"
                     loop {dsk::updatedItems::savedTags::%arg-2%::*}:
-                        send "%{-c}% - %{-h}%%loop-value%"
+                        send "%{-dsk::updatedItems::maincolor}% - %{-dsk::updatedItems::highlightcolor}%%loop-value%"
                     stop
-                send "%{-p}%%{-c}% Invalid argument!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Invalid argument!"
                 stop
         arg-1 is "savedLore":
             player has permission "dsk.updatedItems.save":
                 {dsk::updatedItems::items::%arg-2%} is not set:
-                    send "%{-p}%%{-c}% This item doesn't exist!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item doesn't exist!"
                     stop
                 arg-3 is "add":
                     (arg-4 parsed as integer) is not set:
-                        send "%{-p}%%{-c}% Invalid line!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Invalid line!"
                         stop
                     add (arg-4 parsed as integer) to {dsk::updatedItems::savedLore::%arg-2%::*}
-                    send "%{-p}%%{-c}% Line %{-h}%%arg-4% %{-c}%of the lore will not be saved when updating the item %{-h}%%arg-2%%{-c}%!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Line %{-dsk::updatedItems::highlightcolor}%%arg-4% %{-dsk::updatedItems::maincolor}%of the lore will not be saved when updating the item %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%!"
                     stop
                 arg-3 is "remove":
                     {dsk::updatedItems::savedLore::%arg-2%::*} does not contain (arg-4 parsed as integer):
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not saving line %{-h}%%arg-4% %{-c}%of its lore!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%is not saving line %{-dsk::updatedItems::highlightcolor}%%arg-4% %{-dsk::updatedItems::maincolor}%of its lore!"
                         stop
-                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%is not longer saving line %{-h}%%arg-4% %{-c}%of its lore!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%is not longer saving line %{-dsk::updatedItems::highlightcolor}%%arg-4% %{-dsk::updatedItems::maincolor}%of its lore!"
                     remove (arg-4 parsed as integer) from {dsk::updatedItems::savedLore::%arg-2%::*}
                     stop
                 arg-3 is "clear":
                     size of {dsk::updatedItems::savedLore::%arg-2%::*} is 0:
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved lore!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%doesn't have any saved lore!"
                         stop
-                    send "%{-p}%%{-c}% Cleared all saved lore for item %{-h}%%arg-2%%{-c}%! (%{-h}%%size of {dsk::updatedItems::savedLore::%arg-2%::*}%%{-c}%)"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Cleared all saved lore for item %{-dsk::updatedItems::highlightcolor}%%arg-2%%{-dsk::updatedItems::maincolor}%! (%{-dsk::updatedItems::highlightcolor}%%size of {dsk::updatedItems::savedLore::%arg-2%::*}%%{-dsk::updatedItems::maincolor}%)"
                     clear {dsk::updatedItems::savedLore::%arg-2%::*}
                     stop
                 arg-3 is "list":
                     size of {dsk::updatedItems::savedLore::%arg-2%::*} is 0:
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%doesn't have any saved lore!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%doesn't have any saved lore!"
                         stop
-                    send "%{-p}%%{-c}% Saved lore for item %{-h}%%arg-2% %{-c}%(%{-h}%%size of {dsk::updatedItems::savedLore::%arg-2%::*}%%{-c}%):"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Saved lore for item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%(%{-dsk::updatedItems::highlightcolor}%%size of {dsk::updatedItems::savedLore::%arg-2%::*}%%{-dsk::updatedItems::maincolor}%):"
                     loop {dsk::updatedItems::savedLore::%arg-2%::*}:
-                        send "%{-c}% - %{-h}%%loop-value%"
+                        send "%{-dsk::updatedItems::maincolor}% - %{-dsk::updatedItems::highlightcolor}%%loop-value%"
                     stop
-                send "%{-p}%%{-c}% Invalid argument!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% Invalid argument!"
                 stop
         arg-1 is "savedName", "savedDurability" or "savedUnbreakable":
             player has permission "dsk.updatedItems.save":
                 {dsk::updatedItems::items::%arg-2%} is not set:
-                    send "%{-p}%%{-c}% This item doesn't exist!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% This item doesn't exist!"
                     stop
                 set {_} to arg-1
                 replace all "saved" in {_} with ""
                 (arg-3 parsed as boolean) is not set:
                     {dsk::updatedItems::saved%{_}%::%arg-2%} is true:
-                        send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%saves its %{-h}%%{_}%%{-c}%!"
+                        send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%saves its %{-dsk::updatedItems::highlightcolor}%%{_}%%{-dsk::updatedItems::maincolor}%!"
                         stop
-                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%does not save its %{-h}%%{_}%%{-c}%!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%does not save its %{-dsk::updatedItems::highlightcolor}%%{_}%%{-dsk::updatedItems::maincolor}%!"
                     stop
                 (arg-3 parsed as boolean) is true:
-                    send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%now saves its %{-h}%%{_}%%{-c}%!"
+                    send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%now saves its %{-dsk::updatedItems::highlightcolor}%%{_}%%{-dsk::updatedItems::maincolor}%!"
                     set {dsk::updatedItems::saved%{_}%::%arg-2%} to true
                     stop
-                send "%{-p}%%{-c}% The item %{-h}%%arg-2% %{-c}%now no longer saves its %{-h}%%{_}%%{-c}%!"
+                send "%{-dsk::updatedItems::prefix}%%{-dsk::updatedItems::maincolor}% The item %{-dsk::updatedItems::highlightcolor}%%arg-2% %{-dsk::updatedItems::maincolor}%now no longer saves its %{-dsk::updatedItems::highlightcolor}%%{_}%%{-dsk::updatedItems::maincolor}%!"
                 set {dsk::updatedItems::saved%{_}%::%arg-2%} to false
                 stop
         set {_help} to yaml value "help" from "updatedItems"
