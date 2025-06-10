@@ -103,3 +103,14 @@ If you need any help, you can reach out to me on discord (@deretu). I rarely rea
 The 2 functions in this script are
  - DSK_UpdatedItems_refreshConfig() for refreshing the config
  - DSK_UpdatedItems_refreshItems(player) for refreshing the items in a player's inventory
+
+
+# Content for future updates
+
+There are a couple things I have planned for the future. This includes
+ - Grouping items
+ - More preserved values
+ - Better ingame tutorial
+ - Listing items in a gui
+
+I hope they will come out soon! Let me know if you would like to see anything else.
