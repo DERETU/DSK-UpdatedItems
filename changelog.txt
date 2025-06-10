@@ -1,0 +1,13 @@
+
+v1.1
+
+ - Added a group system
+ - Renamed "updating" of items to "releasing" for consistency
+ - Renamed "removing" of items to "deleting" for consistency
+ - Removing items now happens in a seperate function for easier access from other parts of the code
+ - Items can now be unreleased via command /ui unrelease <item>
+ - Realized that renaming items is not possible realistically because the name of the item is saved on all instances of the item. Maybe this will somehow become a feature in the future, but probably not
+ - Added an option to auto-refresh the items for all online players after releasing an item
+ - Added saving enchantments
+ - Added saving custom model data
+ - Added saving atttributes
