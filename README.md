@@ -33,16 +33,27 @@ Personally, I always found it very annoying to not have this script, so I hope I
 # Commands & Permissions
 
 /updatedItems [/ui] (dsk.updatedItems.command): Basic command
+
 /ui save (dsk.updatedItems.save): Save an item
+
 /ui savedTags/savedLore/savedDurability/savedUnbreakable/savedName/savedAttributes/savedCustomModelData/savedEnchantments (dsk.updatedItems.save): Change the preserved values for an item
+
 /ui give (dsk.updatedItems.give): Give an item
+
 /ui delete (dsk.updatedItems.remove): Delete an item
+
 /ui release (dsk.updatedItems.update): Release an item
+
 /ui unrelease (dsk.updatedItems.update): Unrelease an item
+
 /ui info: Get information on the script
+
 /ui reload (dsk.updatedItems.reload): Reload the scripts configuration
+
 /ui list (dsk.updatedItems.list): List all items
+
 /ui group (dsk.updatedItems.group): Commands for the group system
+
  - /ui group create: Create a new group
  - /ui group delete: Delete a group
  - /ui group add: Add an item to a group
